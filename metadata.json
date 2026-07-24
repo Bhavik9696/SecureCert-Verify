@@ -1,0 +1,6 @@
+{
+  "name": "SecureCert Verify",
+  "description": "Bulk Certificate Verification System for Lecturers with automated QR code analysis, OCR, duplicate detection, and report generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

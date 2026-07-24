@@ -1,0 +1,151 @@
+{
+  "assignments": [
+    {
+      "id": "asg-001",
+      "name": "NPTEL Data Structures Certification",
+      "courseName": "Data Structures and Algorithms in Java",
+      "semester": "Semester 5",
+      "department": "Computer Science",
+      "deadline": "2026-08-15",
+      "description": "Mandatory NPTEL 8-week certification verification for CS502 course.",
+      "createdAt": "2026-07-19T14:33:32.196Z",
+      "totalCertificates": 8,
+      "verifiedCount": 6,
+      "fakeCount": 1,
+      "manualReviewCount": 1
+    },
+    {
+      "id": "asg-002",
+      "name": "Coursera AI & Machine Learning",
+      "courseName": "Supervised Machine Learning: Regression and Classification",
+      "semester": "Semester 7",
+      "department": "Artificial Intelligence & ML",
+      "deadline": "2026-08-20",
+      "description": "Verify Coursera certifications submitted for AIML elective credits.",
+      "createdAt": "2026-07-22T14:33:32.197Z",
+      "totalCertificates": 5,
+      "verifiedCount": 4,
+      "fakeCount": 1,
+      "manualReviewCount": 0
+    }
+  ],
+  "certificates": [
+    {
+      "id": "cert-1001",
+      "assignmentId": "asg-001",
+      "fileName": "Rohan_K_NPTEL_DSA.pdf",
+      "fileHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "studentName": "Rohan Kumar",
+      "studentUsn": "4SO22CS102",
+      "certificateId": "NPTEL24CS52S109283",
+      "courseName": "Data Structures and Algorithms in Java",
+      "platform": "NPTEL",
+      "qrUrl": "https://nptel.ac.in/noc/Ecertificate/?q=NPTEL24CS52S109283",
+      "officialRecord": {
+        "studentName": "Rohan Kumar",
+        "certificateId": "NPTEL24CS52S109283",
+        "courseName": "Data Structures and Algorithms in Java",
+        "issueDate": "2026-04-12",
+        "issuerPlatform": "NPTEL"
+      },
+      "ocrRecord": {
+        "studentName": "Rohan Kumar",
+        "certificateId": "NPTEL24CS52S109283",
+        "courseName": "Data Structures and Algorithms in Java"
+      },
+      "verificationStatus": "Verified",
+      "reason": "Certificate details match official NPTEL verification portal records.",
+      "timestamp": "2026-07-21T14:33:32.197Z",
+      "fileSize": 482010,
+      "fileType": "application/pdf"
+    },
+    {
+      "id": "cert-1002",
+      "assignmentId": "asg-001",
+      "fileName": "Priya_Nair_NPTEL_DBMS.pdf",
+      "fileHash": "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4",
+      "studentName": "Priya Nair",
+      "studentUsn": "4SO22CS088",
+      "certificateId": "NPTEL24CS52S881023",
+      "courseName": "Database Management Systems",
+      "platform": "NPTEL",
+      "qrUrl": "https://nptel.ac.in/noc/Ecertificate/?q=NPTEL24CS52S881023",
+      "officialRecord": {
+        "studentName": "Priya Nair",
+        "certificateId": "NPTEL24CS52S881023",
+        "courseName": "Database Management Systems",
+        "issueDate": "2026-04-14",
+        "issuerPlatform": "NPTEL"
+      },
+      "ocrRecord": {
+        "studentName": "Priya Nair",
+        "certificateId": "NPTEL24CS52S881023",
+        "courseName": "Database Management Systems"
+      },
+      "verificationStatus": "Verified",
+      "reason": "Certificate details match official NPTEL verification portal records.",
+      "timestamp": "2026-07-22T02:33:32.197Z",
+      "fileSize": 512400,
+      "fileType": "application/pdf"
+    },
+    {
+      "id": "cert-1003",
+      "assignmentId": "asg-001",
+      "fileName": "Anish_Blur_QR_Certificate.jpg",
+      "fileHash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+      "studentName": "Anish Rao",
+      "studentUsn": "4SO22CS014",
+      "certificateId": "INF2026CS98210",
+      "courseName": "Full Stack Java Developer",
+      "platform": "Infosys Springboard",
+      "qrUrl": "",
+      "ocrRecord": {
+        "studentName": "Anish Rao",
+        "certificateId": "INF2026CS98210",
+        "courseName": "Full Stack Java Developer"
+      },
+      "verificationStatus": "Manual Review",
+      "reason": "Missing or unreadable QR code on certificate. Flagged for manual inspection by lecturer.",
+      "timestamp": "2026-07-23T02:33:32.197Z",
+      "fileSize": 320150,
+      "fileType": "image/jpeg"
+    },
+    {
+      "id": "cert-1004",
+      "assignmentId": "asg-002",
+      "fileName": "Deepak_Coursera_ML.png",
+      "fileHash": "7d0130f0254c2333b2a3a7891ff4e1eb308527a2fb040fb9c9c3686d06111a43",
+      "studentName": "Deepak V",
+      "studentUsn": "4SO21AI021",
+      "certificateId": "COUR-ML-992104",
+      "courseName": "Supervised Machine Learning",
+      "platform": "Coursera",
+      "qrUrl": "https://coursera.org/verify/COUR-ML-992104",
+      "officialRecord": {
+        "studentName": "Deepak V",
+        "certificateId": "COUR-ML-992104",
+        "courseName": "Supervised Machine Learning",
+        "issueDate": "2026-05-10",
+        "issuerPlatform": "Coursera"
+      },
+      "ocrRecord": {
+        "studentName": "Deepak V",
+        "certificateId": "COUR-ML-992104",
+        "courseName": "Supervised Machine Learning"
+      },
+      "verificationStatus": "Verified",
+      "reason": "Verified against official Coursera verification service.",
+      "timestamp": "2026-07-23T14:33:32.197Z",
+      "fileSize": 610200,
+      "fileType": "image/png"
+    }
+  ],
+  "user": {
+    "id": "lec-101",
+    "name": "Dr. Rajesh Sharma",
+    "email": "lecturer@university.edu",
+    "department": "Computer Science & Engineering",
+    "institution": "St. Joseph Engineering College",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+  }
+}
