@@ -155,6 +155,42 @@ Unlike conventional tools that only flag identical duplicate image files, CertiS
 
 ---
 
+## Deploying to Netlify 🚀
+
+This repository is pre-configured for seamless zero-config deployment on **Netlify** using Netlify Serverless Functions and `netlify.toml` URL rewrites.
+
+### Method 1: Deploy via GitHub (Recommended)
+
+1. Push your repository to **GitHub**.
+2. Log in to [Netlify](https://app.netlify.com/) and click **"Add new site"** → **"Import an existing project"**.
+3. Select your GitHub repository.
+4. Netlify will automatically detect `netlify.toml` with the following pre-configured build settings:
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist`
+   - **Functions directory**: `netlify/functions`
+5. *(Optional)* Add Environment Variables under **Site settings** → **Environment variables**:
+   - `GEMINI_API_KEY`: Your Google Gemini API key (optional, for AI OCR fallback).
+   - `JWT_SECRET`: Custom secret key for authentication tokens.
+6. Click **"Deploy site"**!
+
+### Method 2: Deploy via Netlify CLI
+
+1. Install the Netlify CLI globally:
+   ```bash
+   npm install -g netlify-cli
+   ```
+2. Build and deploy:
+   ```bash
+   netlify login
+   netlify deploy --build
+   ```
+3. For production deployment:
+   ```bash
+   netlify deploy --build --prod
+   ```
+
+---
+
 ## API Endpoints
 
 | Method | Endpoint | Description |
