@@ -98,21 +98,11 @@ export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const uploadBulkCertificatesHandler = async (files: File[], assignmentId?: string) => {
     setIsUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(5);
     try {
-      // Simulate progress updates for responsive feedback
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 15;
-        });
-      }, 300);
-
-      const res = await apiService.uploadBulkCertificates(files, assignmentId);
-      clearInterval(progressInterval);
+      const res = await apiService.uploadBulkCertificates(files, assignmentId, (percent) => {
+        setUploadProgress(percent);
+      });
       setUploadProgress(100);
 
       await fetchData();

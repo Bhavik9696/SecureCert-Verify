@@ -105,20 +105,40 @@ export const apiService = {
     assignmentId?: string,
     onProgress?: (percent: number) => void
   ): Promise<{ message: string; processedCount: number; results: VerificationRecord[] }> {
-    const formData = new FormData();
-    files.forEach((file) => {
+    const results: VerificationRecord[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const formData = new FormData();
       formData.append('files', file);
-    });
-    if (assignmentId) {
-      formData.append('assignmentId', assignmentId);
+      if (assignmentId) {
+        formData.append('assignmentId', assignmentId);
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/certificates/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await parseJsonResponse<{ message: string; processedCount: number; results: VerificationRecord[] }>(res);
+        if (data.results && Array.isArray(data.results)) {
+          results.push(...data.results);
+        }
+      } catch (fileErr: any) {
+        console.error(`Error processing certificate ${file.name}:`, fileErr);
+      }
+
+      if (onProgress) {
+        onProgress(Math.round(((i + 1) / files.length) * 100));
+      }
     }
 
-    const res = await fetch(`${API_BASE}/certificates/upload`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    return parseJsonResponse<{ message: string; processedCount: number; results: VerificationRecord[] }>(res);
+    return {
+      message: `Processed ${results.length} of ${files.length} certificates successfully.`,
+      processedCount: results.length,
+      results,
+    };
   },
 
   async deleteCertificate(id: string): Promise<void> {

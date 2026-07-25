@@ -252,7 +252,11 @@ export async function verifyCertificateFile(
     }
 
     try {
-      const { data: { text: ocrText } } = await Tesseract.recognize(fileBuffer, 'eng');
+      const ocrTask = Tesseract.recognize(fileBuffer, 'eng');
+      const timeoutTask = new Promise<{ data: { text: string } }>((_, reject) =>
+        setTimeout(() => reject(new Error('OCR Timeout')), 3500)
+      );
+      const { data: { text: ocrText } } = await Promise.race([ocrTask, timeoutTask]);
       if (ocrText) {
         const detectedName = extractStudentNameFromText(ocrText);
         if (detectedName) {
@@ -260,7 +264,7 @@ export async function verifyCertificateFile(
         }
       }
     } catch (ocrErr) {
-      console.warn('Tesseract OCR engine failed:', ocrErr);
+      console.warn('Tesseract OCR engine bypassed/timed out:', ocrErr);
     }
   }
 
