@@ -148,6 +148,13 @@ export const apiService = {
     await parseJsonResponse<{ message?: string }>(res);
   },
 
+  async clearAllCertificates(): Promise<void> {
+    const res = await fetch(`${API_BASE}/certificates`, {
+      method: 'DELETE',
+    });
+    await parseJsonResponse<{ message?: string }>(res);
+  },
+
   // Export Reports
   getExportUrl(format: 'excel' | 'pdf' | 'csv', status?: string, assignmentId?: string): string {
     const query = new URLSearchParams({ format });

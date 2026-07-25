@@ -8,6 +8,7 @@ export const ResultsPage: React.FC = () => {
     certificates,
     assignments,
     deleteCertificate,
+    clearAllCertificates,
     statusFilter,
     setStatusFilter,
     searchQuery,
@@ -53,6 +54,7 @@ export const ResultsPage: React.FC = () => {
       <VerificationTable
         records={certificates}
         onDeleteRecord={deleteCertificate}
+        onClearAll={clearAllCertificates}
         selectedAssignmentId={selectedAssignmentId}
         onAssignmentChange={setSelectedAssignmentId}
         statusFilter={statusFilter}

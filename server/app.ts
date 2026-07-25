@@ -173,6 +173,11 @@ export function createExpressApp() {
     }
   });
 
+  app.delete('/api/certificates', (req, res) => {
+    store.clearAllCertificates();
+    res.json({ message: 'All certificate records cleared.' });
+  });
+
   app.delete('/api/certificates/:id', (req, res) => {
     const { id } = req.params;
     const deleted = store.deleteCertificate(id);

@@ -31,6 +31,7 @@ interface VerificationContextType {
   }) => Promise<Assignment>;
   uploadBulkCertificates: (files: File[], assignmentId?: string) => Promise<VerificationRecord[]>;
   deleteCertificate: (id: string) => Promise<void>;
+  clearAllCertificates: () => Promise<void>;
 }
 
 const DEFAULT_STATS: DashboardStats = {
@@ -125,6 +126,16 @@ export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const clearAllCertificatesHandler = async () => {
+    try {
+      await apiService.clearAllCertificates();
+    } catch (err) {
+      console.error('Error clearing certificates:', err);
+    } finally {
+      await fetchData();
+    }
+  };
+
   return (
     <VerificationContext.Provider
       value={{
@@ -144,6 +155,7 @@ export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         createAssignment: createAssignmentHandler,
         uploadBulkCertificates: uploadBulkCertificatesHandler,
         deleteCertificate: deleteCertificateHandler,
+        clearAllCertificates: clearAllCertificatesHandler,
       }}
     >
       {children}

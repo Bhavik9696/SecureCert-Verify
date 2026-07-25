@@ -20,7 +20,7 @@ interface DashboardPageProps {
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) => {
-  const { stats, certificates, deleteCertificate, statusFilter, setStatusFilter, searchQuery, setSearchQuery } =
+  const { stats, certificates, deleteCertificate, clearAllCertificates, statusFilter, setStatusFilter, searchQuery, setSearchQuery } =
     useVerification();
 
   return (
@@ -132,6 +132,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ setActiveTab }) =>
         <VerificationTable
           records={certificates.slice(0, 10)}
           onDeleteRecord={deleteCertificate}
+          onClearAll={clearAllCertificates}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           searchQuery={searchQuery}

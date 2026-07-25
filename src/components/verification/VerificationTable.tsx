@@ -19,6 +19,7 @@ import { apiService } from '../../services/api.js';
 interface VerificationTableProps {
   records: VerificationRecord[];
   onDeleteRecord?: (id: string) => void;
+  onClearAll?: () => void;
   selectedAssignmentId?: string;
   onAssignmentChange?: (id: string) => void;
   statusFilter?: VerificationStatus | 'All';
@@ -30,6 +31,7 @@ interface VerificationTableProps {
 export const VerificationTable: React.FC<VerificationTableProps> = ({
   records,
   onDeleteRecord,
+  onClearAll,
   selectedAssignmentId = 'all',
   onAssignmentChange,
   statusFilter = 'All',
@@ -104,8 +106,24 @@ export const VerificationTable: React.FC<VerificationTableProps> = ({
             </select>
           </div>
 
-          {/* Quick Export Dropdown */}
+          {/* Quick Export Dropdown & Clear All */}
           <div className="flex items-center gap-1">
+            {onClearAll && records.length > 0 && (
+              <button
+                type="button"
+                id="clear-all-certificates-btn"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to clear all verified certificate records?')) {
+                    onClearAll();
+                  }
+                }}
+                className="px-2.5 py-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 dark:bg-slate-800 dark:hover:bg-red-950/60 dark:hover:text-red-400 text-slate-600 dark:text-slate-400 font-semibold text-xs rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1 mr-1 cursor-pointer"
+                title="Clear All Verification Audit Records"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Clear All</span>
+              </button>
+            )}
             <a
               id="export-excel-btn"
               href={apiService.getExportUrl('excel', statusFilter, selectedAssignmentId)}
