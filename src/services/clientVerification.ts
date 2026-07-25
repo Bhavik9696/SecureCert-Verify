@@ -65,28 +65,50 @@ async function extractQrFromImageFile(file: File): Promise<string | null> {
   });
 }
 
+function isGenericFileName(name: string): boolean {
+  if (!name) return true;
+  const lower = name.toLowerCase().trim();
+  if (
+    lower.includes('screenshot') ||
+    lower.includes('screen shot') ||
+    lower.includes('img') ||
+    lower.includes('scan') ||
+    lower.includes('document') ||
+    lower.includes('certificate') ||
+    lower.includes('credentials') ||
+    lower.includes('image') ||
+    lower.includes('photo') ||
+    lower.includes('upload') ||
+    lower.includes('unnamed') ||
+    lower.includes('file') ||
+    /^\d+$/.test(lower) ||
+    /^[0-9a-f-]{8,}$/i.test(lower) ||
+    /^(screenshot|img|doc|scan|cert)\s*[-_\d\s]*$/i.test(lower)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * Helper to extract name, ID, platform from file name or QR URL
  */
 function parseCertificateMetaData(fileName: string, qrUrl: string | null) {
   let platform: VerificationRecord['platform'] = 'Other';
-  let studentName = 'Unknown Student';
+  let studentName = 'Unidentified Student';
   let certId = `CERT-${Math.floor(100000 + Math.random() * 900000)}`;
   let courseName = 'Course Completion Certificate';
 
   // Clean filename
   const cleanName = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
 
-  // Extract Student Name
-  const nameMatch = cleanName.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
-  if (nameMatch && !cleanName.toLowerCase().includes('screenshot')) {
-    studentName = nameMatch[1];
-  } else {
-    const parts = cleanName.split(' ');
-    if (parts.length >= 2) {
-      studentName = parts.slice(0, 2).map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+  // Extract Student Name ONLY if filename is not generic
+  if (!isGenericFileName(cleanName)) {
+    const nameMatch = cleanName.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    if (nameMatch) {
+      studentName = nameMatch[1];
     } else {
-      studentName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+      studentName = cleanName;
     }
   }
 
@@ -161,8 +183,18 @@ export async function verifyCertificateFileClient(
   const qrUrl = await extractQrFromImageFile(file);
   const { studentName, certId, courseName, platform } = parseCertificateMetaData(file.name, qrUrl);
 
+  const isFake = file.name.toLowerCase().includes('fake') || file.name.toLowerCase().includes('edited');
+  const isManual = file.name.toLowerCase().includes('blur') || (!qrUrl && !file.type.includes('pdf'));
+
+  let officialStudentName = 'Registered Student Name';
+  if (isFake) {
+    officialStudentName = 'Alex Mercer (Registered Owner)';
+  } else if (studentName !== 'Unidentified Student' && !isGenericFileName(studentName)) {
+    officialStudentName = studentName;
+  }
+
   const officialRecord: OfficialRecord = {
-    studentName,
+    studentName: officialStudentName,
     certificateId: certId,
     courseName,
     issueDate: new Date().toLocaleDateString(),
@@ -174,9 +206,6 @@ export async function verifyCertificateFileClient(
     certificateId: certId,
     courseName,
   };
-
-  const isFake = file.name.toLowerCase().includes('fake') || file.name.toLowerCase().includes('edited');
-  const isManual = file.name.toLowerCase().includes('blur') || (!qrUrl && !file.type.includes('pdf'));
 
   let status: VerificationRecord['verificationStatus'] = 'Verified';
   let reason = `Certificate verified successfully for ${platform}. QR payload matches record.`;
