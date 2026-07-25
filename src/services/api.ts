@@ -5,6 +5,7 @@ import {
   LecturerUser,
   VerificationStatus,
 } from '../types/index.js';
+import { verifyCertificateFileClient } from './clientVerification.js';
 
 const API_BASE = '/api';
 
@@ -109,6 +110,7 @@ export const apiService = {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      let recordAdded = false;
       const formData = new FormData();
       formData.append('files', file);
       if (assignmentId) {
@@ -121,12 +123,25 @@ export const apiService = {
           body: formData,
         });
 
-        const data = await parseJsonResponse<{ message: string; processedCount: number; results: VerificationRecord[] }>(res);
-        if (data.results && Array.isArray(data.results)) {
-          results.push(...data.results);
+        if (res.ok) {
+          const data = await parseJsonResponse<{ message: string; processedCount: number; results: VerificationRecord[] }>(res);
+          if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+            results.push(...data.results);
+            recordAdded = true;
+          }
         }
       } catch (fileErr: any) {
-        console.error(`Error processing certificate ${file.name}:`, fileErr);
+        console.warn(`Server upload for ${file.name} failed/unsupported, utilizing client verification fallback:`, fileErr);
+      }
+
+      // If server response didn't produce a record, use client verification fallback
+      if (!recordAdded) {
+        try {
+          const clientRecord = await verifyCertificateFileClient(file, results, assignmentId);
+          results.push(clientRecord);
+        } catch (clientErr) {
+          console.error(`Client verification failed for ${file.name}:`, clientErr);
+        }
       }
 
       if (onProgress) {

@@ -43,12 +43,38 @@ const DEFAULT_STATS: DashboardStats = {
   alreadyUploadedCount: 0,
 };
 
+function calculateStatsFromRecords(records: VerificationRecord[]): DashboardStats {
+  const total = records.length;
+  const verified = records.filter((r) => r.verificationStatus === 'Verified').length;
+  const fake = records.filter((r) => r.verificationStatus === 'Fake').length;
+  const manual = records.filter((r) => r.verificationStatus === 'Manual Review').length;
+  const duplicate = records.filter((r) => r.verificationStatus === 'Already Uploaded').length;
+  const percentage = total > 0 ? Math.round((verified / total) * 100) : 0;
+
+  return {
+    totalCertificates: total,
+    verifiedCertificates: verified,
+    fakeCertificates: fake,
+    manualReviewCertificates: manual,
+    alreadyUploadedCount: duplicate,
+    verificationPercentage: percentage,
+  };
+}
+
 const VerificationContext = createContext<VerificationContextType | undefined>(undefined);
 
 export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [certificates, setCertificates] = useState<VerificationRecord[]>([]);
+  const [certificates, setCertificates] = useState<VerificationRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('certishield_certs');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [stats, setStats] = useState<DashboardStats>(DEFAULT_STATS);
+  const [stats, setStats] = useState<DashboardStats>(() => calculateStatsFromRecords(certificates));
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -65,14 +91,32 @@ export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           status: statusFilter,
           searchQuery,
           assignmentId: selectedAssignmentId,
-        }),
-        apiService.getAssignments(),
-        apiService.getDashboardStats(),
+        }).catch(() => []),
+        apiService.getAssignments().catch(() => []),
+        apiService.getDashboardStats().catch(() => DEFAULT_STATS),
       ]);
 
-      setCertificates(certsData);
       setAssignments(asgsData);
-      setStats(statsData);
+
+      // Merge server certs with local state certs so serverless cold starts never wipe uploaded files
+      setCertificates((prevLocal) => {
+        const map = new Map<string, VerificationRecord>();
+        // Add existing local records
+        prevLocal.forEach((r) => map.set(r.id, r));
+        // Add server records
+        (certsData || []).forEach((r) => map.set(r.id, r));
+
+        const merged = Array.from(map.values());
+        try {
+          localStorage.setItem('certishield_certs', JSON.stringify(merged));
+        } catch (e) {
+          console.warn('LocalStorage save failed:', e);
+        }
+
+        const mergedStats = calculateStatsFromRecords(merged);
+        setStats(mergedStats);
+        return merged;
+      });
     } catch (err) {
       console.error('Error fetching verification context data:', err);
     } finally {
@@ -106,8 +150,30 @@ export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       });
       setUploadProgress(100);
 
+      if (res.results && res.results.length > 0) {
+        setCertificates((prev) => {
+          const map = new Map<string, VerificationRecord>();
+          // Put new results first
+          res.results.forEach((r) => map.set(r.id, r));
+          // Put existing records
+          prev.forEach((r) => {
+            if (!map.has(r.id)) map.set(r.id, r);
+          });
+
+          const updatedList = Array.from(map.values());
+          try {
+            localStorage.setItem('certishield_certs', JSON.stringify(updatedList));
+          } catch (e) {
+            console.warn('Failed storing certs to localStorage:', e);
+          }
+
+          setStats(calculateStatsFromRecords(updatedList));
+          return updatedList;
+        });
+      }
+
       await fetchData();
-      return res.results;
+      return res.results || [];
     } finally {
       setTimeout(() => {
         setIsUploading(false);
@@ -117,22 +183,30 @@ export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   const deleteCertificateHandler = async (id: string) => {
+    setCertificates((prev) => {
+      const filtered = prev.filter((r) => r.id !== id);
+      try {
+        localStorage.setItem('certishield_certs', JSON.stringify(filtered));
+      } catch (e) {}
+      setStats(calculateStatsFromRecords(filtered));
+      return filtered;
+    });
+
     try {
       await apiService.deleteCertificate(id);
     } catch (err) {
-      console.error('Error deleting certificate:', err);
-    } finally {
-      await fetchData();
+      console.error('Error deleting certificate on server:', err);
     }
   };
 
   const clearAllCertificatesHandler = async () => {
+    setCertificates([]);
+    setStats(DEFAULT_STATS);
     try {
+      localStorage.removeItem('certishield_certs');
       await apiService.clearAllCertificates();
     } catch (err) {
-      console.error('Error clearing certificates:', err);
-    } finally {
-      await fetchData();
+      console.error('Error clearing certificates on server:', err);
     }
   };
 
