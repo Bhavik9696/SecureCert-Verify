@@ -67,7 +67,33 @@ export const VerificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [certificates, setCertificates] = useState<VerificationRecord[]>(() => {
     try {
       const saved = localStorage.getItem('certishield_certs');
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed: VerificationRecord[] = JSON.parse(saved);
+        const sanitized = parsed.map((r) => {
+          let sName = r.studentName;
+          if (sName.toLowerCase().includes('screenshot') || sName.toLowerCase().includes('credentials')) {
+            sName = 'Unidentified Student';
+          }
+          let offName = r.officialRecord?.studentName;
+          if (offName && (offName.toLowerCase().includes('screenshot') || offName.toLowerCase().includes('credentials'))) {
+            offName = 'Registered Student Name';
+          }
+          let certId = r.certificateId;
+          if (!certId || certId.toUpperCase().includes('CREDENTIALS')) {
+            certId = `CERT-${Math.floor(100000 + Math.random() * 900000)}`;
+          }
+          return {
+            ...r,
+            studentName: sName,
+            certificateId: certId,
+            officialRecord: r.officialRecord
+              ? { ...r.officialRecord, studentName: offName || 'Registered Student Name', certificateId: certId }
+              : undefined,
+          };
+        });
+        return sanitized;
+      }
+      return [];
     } catch {
       return [];
     }

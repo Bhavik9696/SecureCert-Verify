@@ -40,10 +40,31 @@ class StoreService {
       if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
         const parsed: DatabaseSchema = JSON.parse(raw);
-        // Filter out any mock records if they exist
-        parsed.certificates = (parsed.certificates || []).filter(
-          (c) => !c.id.startsWith('cert-100')
-        );
+        // Filter out any mock records if they exist and sanitize legacy entries
+        parsed.certificates = (parsed.certificates || [])
+          .filter((c) => !c.id.startsWith('cert-100'))
+          .map((c) => {
+            let sName = c.studentName;
+            if (sName.toLowerCase().includes('screenshot') || sName.toLowerCase().includes('credentials')) {
+              sName = 'Unidentified Student';
+            }
+            let offName = c.officialRecord?.studentName;
+            if (offName && (offName.toLowerCase().includes('screenshot') || offName.toLowerCase().includes('credentials'))) {
+              offName = 'Registered Student Name';
+            }
+            let certId = c.certificateId;
+            if (!certId || certId.toUpperCase().includes('CREDENTIALS')) {
+              certId = `CERT-${Math.floor(100000 + Math.random() * 900000)}`;
+            }
+            return {
+              ...c,
+              studentName: sName,
+              certificateId: certId,
+              officialRecord: c.officialRecord
+                ? { ...c.officialRecord, studentName: offName || 'Registered Student Name', certificateId: certId }
+                : undefined,
+            };
+          });
         parsed.assignments = (parsed.assignments || []).filter(
           (a) => !a.id.startsWith('asg-00')
         );

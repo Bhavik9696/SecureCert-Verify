@@ -99,11 +99,28 @@ function parseCertificateMetaData(fileName: string, qrUrl: string | null) {
   let certId = `CERT-${Math.floor(100000 + Math.random() * 900000)}`;
   let courseName = 'Course Completion Certificate';
 
+  // Try extracting student name from QR URL parameters first
+  if (qrUrl) {
+    try {
+      const urlObj = new URL(qrUrl);
+      const qName = urlObj.searchParams.get('studentName') || urlObj.searchParams.get('name') || urlObj.searchParams.get('student');
+      const qCourse = urlObj.searchParams.get('courseName') || urlObj.searchParams.get('course');
+      if (qName && !isGenericFileName(qName)) {
+        studentName = qName;
+      }
+      if (qCourse) {
+        courseName = qCourse;
+      }
+    } catch {
+      // not a full URL
+    }
+  }
+
   // Clean filename
   const cleanName = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
 
-  // Extract Student Name ONLY if filename is not generic
-  if (!isGenericFileName(cleanName)) {
+  // Extract Student Name ONLY if filename is not generic and name not found yet
+  if (studentName === 'Unidentified Student' && !isGenericFileName(cleanName)) {
     const nameMatch = cleanName.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
     if (nameMatch) {
       studentName = nameMatch[1];
@@ -118,30 +135,30 @@ function parseCertificateMetaData(fileName: string, qrUrl: string | null) {
 
   if (lowerFile.includes('nptel') || lowerQr.includes('nptel')) {
     platform = 'NPTEL';
-    courseName = 'Data Structures and Algorithms in Java';
+    if (courseName === 'Course Completion Certificate') courseName = 'Data Structures and Algorithms in Java';
     const idMatch = fileName.match(/(NPTEL[A-Z0-9]+)/i);
-    if (idMatch) certId = idMatch[1].toUpperCase();
+    if (idMatch && !idMatch[1].toUpperCase().includes('CREDENTIALS')) certId = idMatch[1].toUpperCase();
   } else if (lowerFile.includes('coursera') || lowerQr.includes('coursera')) {
     platform = 'Coursera';
-    courseName = 'Supervised Machine Learning: Regression';
+    if (courseName === 'Course Completion Certificate') courseName = 'Supervised Machine Learning: Regression';
     const idMatch = fileName.match(/([A-Z0-9]{8,12})/i);
-    if (idMatch) certId = `COUR-${idMatch[1].toUpperCase()}`;
+    if (idMatch && !idMatch[1].toUpperCase().includes('CREDENTIALS')) certId = `COUR-${idMatch[1].toUpperCase()}`;
   } else if (lowerFile.includes('infosys') || lowerQr.includes('springboard') || lowerQr.includes('onwingspan')) {
     platform = 'Infosys Springboard';
-    courseName = 'Full Stack Java Developer';
+    if (courseName === 'Course Completion Certificate') courseName = 'Full Stack Java Developer';
     const idMatch = fileName.match(/(INF[0-9]+)/i);
-    if (idMatch) certId = idMatch[1].toUpperCase();
+    if (idMatch && !idMatch[1].toUpperCase().includes('CREDENTIALS')) certId = idMatch[1].toUpperCase();
   } else if (lowerFile.includes('cisco') || lowerQr.includes('cisco')) {
     platform = 'Cisco';
-    courseName = 'Cybersecurity Essentials';
+    if (courseName === 'Course Completion Certificate') courseName = 'Cybersecurity Essentials';
   } else if (lowerFile.includes('udemy') || lowerQr.includes('udemy')) {
     platform = 'Udemy';
-    courseName = 'Complete Web Development Bootcamp';
+    if (courseName === 'Course Completion Certificate') courseName = 'Complete Web Development Bootcamp';
   }
 
   if (qrUrl && certId.startsWith('CERT-')) {
     const urlMatch = qrUrl.match(/[\/=]([A-Z0-9]{6,16})/i);
-    if (urlMatch) {
+    if (urlMatch && !urlMatch[1].toUpperCase().includes('CREDENTIALS')) {
       certId = urlMatch[1].toUpperCase();
     }
   }

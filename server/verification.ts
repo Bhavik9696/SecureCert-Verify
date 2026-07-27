@@ -128,6 +128,7 @@ export function isGenericFileName(name: string): boolean {
     lower.includes('upload') ||
     lower.includes('unnamed') ||
     lower.includes('file') ||
+    lower.includes('untitled') ||
     /^\d+$/.test(lower) ||
     /^[0-9a-f-]{8,}$/i.test(lower) ||
     /^(screenshot|img|doc|scan|cert)\s*[-_\d\s]*$/i.test(lower)
@@ -138,8 +139,10 @@ export function isGenericFileName(name: string): boolean {
 }
 
 export function isNameMatch(name1?: string, name2?: string): boolean {
-  if (!name1 || !name2) return true;
+  if (!name1 || !name2) return false;
   if (isGenericFileName(name1) || isGenericFileName(name2)) return false;
+  if (name1.toLowerCase().includes('unidentified') || name2.toLowerCase().includes('unidentified')) return false;
+
   const n1 = name1.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
   const n2 = name2.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
   if (n1 === n2) return true;
@@ -148,10 +151,7 @@ export function isNameMatch(name1?: string, name2?: string): boolean {
   const tokens2 = n2.split(' ').filter(Boolean);
 
   if (tokens1.length > 0 && tokens2.length > 0) {
-    // If primary first names differ completely (e.g., "deepak" vs "suresh" or "karan" vs "alex"), mismatch
-    if (tokens1[0] !== tokens2[0] && tokens1[0].length >= 3 && tokens2[0].length >= 3) {
-      return false;
-    }
+    if (tokens1[0] === tokens2[0] && tokens1[0].length >= 3) return true;
     const common = tokens1.filter((t) => tokens2.includes(t));
     if (common.length >= 1) return true;
   }
@@ -219,8 +219,23 @@ export function extractQrPayload(qrData: string): {
 
   // Handle standard URLs
   const parsedUrl = parseVerificationUrl(qrData);
+  let studentName: string | undefined = undefined;
+  let courseName: string | undefined = undefined;
+
+  try {
+    const urlObj = new URL(qrData);
+    const qName = urlObj.searchParams.get('studentName') || urlObj.searchParams.get('name') || urlObj.searchParams.get('student') || urlObj.searchParams.get('issuedTo');
+    const qCourse = urlObj.searchParams.get('courseName') || urlObj.searchParams.get('course') || urlObj.searchParams.get('title');
+    if (qName && !isGenericFileName(qName)) studentName = qName;
+    if (qCourse) courseName = qCourse;
+  } catch {
+    // Not a standard URL or invalid URL format
+  }
+
   return {
     platform: parsedUrl.platform,
+    studentName,
+    courseName,
     certificateId: parsedUrl.certificateId,
   };
 }
@@ -485,10 +500,15 @@ Return ONLY valid JSON format.`,
   const platformMatch = platform === (officialRecord.issuerPlatform || platform);
 
   if (!nameMatch && verificationStatus === 'Verified') {
-    verificationStatus = 'Fake';
-    reason = `Name Mismatch: Certificate claims name is "${ocrName}", but official QR verification portal registers record to "${officialRecord.studentName}".`;
+    if (ocrName === 'Unidentified Student' || isGenericFileName(ocrName)) {
+      verificationStatus = 'Manual Review';
+      reason = 'Student name could not be extracted from certificate image face. Flagged for lecturer manual inspection.';
+    } else {
+      verificationStatus = 'Fake';
+      reason = `Name Mismatch: Certificate image displays "${ocrName}", but official QR verification portal registers record to "${officialRecord.studentName}".`;
+    }
   } else if (nameMatch && verificationStatus === 'Verified') {
-    reason = `Verified: Certificate details and student name "${ocrName}" match official ${platform} QR portal records.`;
+    reason = `Verified: Student name "${ocrName}" on certificate image matches official ${platform} QR portal records.`;
   }
 
   const qrVerificationDetails = {
